@@ -167,5 +167,17 @@ def main():
     accuracy = np.mean([1 if translation[i] in src2trg[i] else 0 for i in src])
     print('Coverage:{0:7.2%}  Accuracy:{1:7.2%}'.format(coverage, accuracy))
 
+    #show translation example
+    print("show translation example (enter 'EXIT' to exit)")
+    while True :
+        testword = input()
+        if testword == 'EXIT':
+            break
+        elif testword in vocab:
+            trans_word = trg_words[translation[src_word2ind[testword]]]
+            print("translation of %s is %s" % (testword, trans_word))
+        else:
+            print("test word not in the vocabulary")
+                  
 if __name__ == '__main__':
     main()

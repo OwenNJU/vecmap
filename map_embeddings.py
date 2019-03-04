@@ -153,7 +153,7 @@ def main():
     elif args.precision == 'fp64':
         dtype = 'float64'
 
-    # Read input embeddingss
+    # Read input embeddings
     srcfile = open(args.src_input, encoding=args.encoding, errors='surrogateescape')
     trgfile = open(args.trg_input, encoding=args.encoding, errors='surrogateescape')
     src_words, x = embeddings.read(srcfile, dtype=dtype)
