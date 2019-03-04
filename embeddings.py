@@ -19,20 +19,21 @@ import numpy as np
 
 
 def read(file, threshold=0, vocabulary=None, dtype='float'):
-    header = file.readline().split(' ')
-    count = int(header[0]) if threshold <= 0 else min(threshold, int(header[0]))
+    header = file.readline().split(' ')#read the first row and split it by ' '
+    count = int(header[0]) if threshold <= 0 else min(threshold, int(header[0]))# words numbers
     dim = int(header[1])
-    words = []
+    words = []# vocabulary
     matrix = np.empty((count, dim), dtype=dtype) if vocabulary is None else []
     for i in range(count):
-        word, vec = file.readline().split(' ', 1)
+        word, vec = file.readline().split(' ', 1)#split to get word and word vector
         if vocabulary is None:
-            words.append(word)
-            matrix[i] = np.fromstring(vec, sep=' ', dtype=dtype)
+            words.append(word)# append new word
+            matrix[i] = np.fromstring(vec, sep=' ', dtype=dtype)# get word vector of float
         elif word in vocabulary:
             words.append(word)
             matrix.append(np.fromstring(vec, sep=' ', dtype=dtype))
     return (words, matrix) if vocabulary is None else (words, np.array(matrix, dtype=dtype))
+    #return words and word vector matrix
 
 
 def write(words, matrix, file):
@@ -40,35 +41,37 @@ def write(words, matrix, file):
     print('%d %d' % m.shape, file=file)
     for i in range(len(words)):
         print(words[i] + ' ' + ' '.join(['%.6g' % x for x in m[i]]), file=file)
+    # write embeddings
 
 
 def length_normalize(matrix):
     xp = get_array_module(matrix)
-    norms = xp.sqrt(xp.sum(matrix**2, axis=1))
-    norms[norms == 0] = 1
-    matrix /= norms[:, xp.newaxis]
+    norms = xp.sqrt(xp.sum(matrix**2, axis=1)) # compute each word vector's norm
+    norms[norms == 0] = 1 # avoid error
+    matrix /= norms[:, xp.newaxis] #turn norm from 1-dim to 2-dim
 
 
 def mean_center(matrix):
     xp = get_array_module(matrix)
-    avg = xp.mean(matrix, axis=0)
+    avg = xp.mean(matrix, axis=0)# compute mean of the same volume
     matrix -= avg
 
 
 def length_normalize_dimensionwise(matrix):
     xp = get_array_module(matrix)
-    norms = xp.sqrt(xp.sum(matrix**2, axis=0))
+    norms = xp.sqrt(xp.sum(matrix**2, axis=0))# compute norm of the same volume
     norms[norms == 0] = 1
     matrix /= norms
 
 
 def mean_center_embeddingwise(matrix):
     xp = get_array_module(matrix)
-    avg = xp.mean(matrix, axis=1)
+    avg = xp.mean(matrix, axis=1)# compute mean of each word vector
     matrix -= avg[:, xp.newaxis]
 
 
 def normalize(matrix, actions):
+    #choose the way of normalizing
     for action in actions:
         if action == 'unit':
             length_normalize(matrix)

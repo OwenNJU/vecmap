@@ -92,8 +92,8 @@ def main():
         embeddings.length_normalize(z)
 
     # Build word to index map
-    src_word2ind = {word: i for i, word in enumerate(src_words)}
-    trg_word2ind = {word: i for i, word in enumerate(trg_words)}
+    src_word2ind = {word: i for i, word in enumerate(src_words)} #index start from 0
+    trg_word2ind = {word: i for i, word in enumerate(trg_words)} # map[word] = i
 
     # Read dictionary and compute coverage
     f = open(args.dictionary, encoding=args.encoding, errors='surrogateescape')
@@ -109,7 +109,7 @@ def main():
             vocab.add(src)
         except KeyError:
             oov.add(src)
-    src = list(src2trg.keys())
+    src = list(src2trg.keys()) # all indexes of src words
     oov -= vocab  # If one of the translation options is in the vocabulary, then the entry is not an oov
     coverage = len(src2trg) / (len(src2trg) + len(oov))
 
@@ -166,7 +166,6 @@ def main():
     # Compute accuracy
     accuracy = np.mean([1 if translation[i] in src2trg[i] else 0 for i in src])
     print('Coverage:{0:7.2%}  Accuracy:{1:7.2%}'.format(coverage, accuracy))
-
 
 if __name__ == '__main__':
     main()

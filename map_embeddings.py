@@ -53,25 +53,37 @@ def topk_mean(m, k, inplace=False):  # TODO Assuming that axis is 1
 
 def main():
     # Parse command line arguments
+    # https://docs.python.org/3/library/argparse.html
     parser = argparse.ArgumentParser(description='Map word embeddings in two languages into a shared space')
+    # description - This argument gives a brief description of what the program does and how it works.
     parser.add_argument('src_input', help='the input source embeddings')
+    # help - A brief description of what the argument does.
     parser.add_argument('trg_input', help='the input target embeddings')
     parser.add_argument('src_output', help='the output source embeddings')
     parser.add_argument('trg_output', help='the output target embeddings')
     parser.add_argument('--encoding', default='utf-8', help='the character encoding for input/output (defaults to utf-8)')
+    # -- optional
+    # default - The value produced if the argument is absent from the command line.
     parser.add_argument('--precision', choices=['fp16', 'fp32', 'fp64'], default='fp32', help='the floating-point precision (defaults to fp32)')
+    # choices - A container of the allowable values for the argument.
     parser.add_argument('--cuda', action='store_true', help='use cuda (requires cupy)')
+    # action - The basic type of action to be taken when this argument is encountered at the command line.
+    # store_ture - store true value
     parser.add_argument('--batch_size', default=10000, type=int, help='batch size (defaults to 10000); does not affect results, larger is usually faster but uses more memory')
     parser.add_argument('--seed', type=int, default=0, help='the random seed (defaults to 0)')
 
     recommended_group = parser.add_argument_group('recommended settings', 'Recommended settings for different scenarios')
+    # add_argument_group() - returns an argument group object which has an add_argument() method just like a regular ArgumentParser.
+    # it's a better conceptual grouping of arguments than this default one
     recommended_type = recommended_group.add_mutually_exclusive_group()
+    # argparse will make sure that only one of the arguments in the mutually exclusive group was present on the command line
     recommended_type.add_argument('--supervised', metavar='DICTIONARY', help='recommended if you have a large training dictionary')
     recommended_type.add_argument('--semi_supervised', metavar='DICTIONARY', help='recommended if you have a small seed dictionary')
     recommended_type.add_argument('--identical', action='store_true', help='recommended if you have no seed dictionary but can rely on identical words')
     recommended_type.add_argument('--unsupervised', action='store_true', help='recommended if you have no seed dictionary and do not want to rely on identical words')
     recommended_type.add_argument('--acl2018', action='store_true', help='reproduce our ACL 2018 system')
     recommended_type.add_argument('--aaai2018', metavar='DICTIONARY', help='reproduce our AAAI 2018 system')
+    # A name for the argument in usage messages
     recommended_type.add_argument('--acl2017', action='store_true', help='reproduce our ACL 2017 system with numeral initialization')
     recommended_type.add_argument('--acl2017_seed', metavar='DICTIONARY', help='reproduce our ACL 2017 system with a seed dictionary')
     recommended_type.add_argument('--emnlp2016', metavar='DICTIONARY', help='reproduce our EMNLP 2016 system')
@@ -141,7 +153,7 @@ def main():
     elif args.precision == 'fp64':
         dtype = 'float64'
 
-    # Read input embeddings
+    # Read input embeddingss
     srcfile = open(args.src_input, encoding=args.encoding, errors='surrogateescape')
     trgfile = open(args.trg_input, encoding=args.encoding, errors='surrogateescape')
     src_words, x = embeddings.read(srcfile, dtype=dtype)
