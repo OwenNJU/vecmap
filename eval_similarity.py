@@ -57,7 +57,9 @@ def main():
                 line = line.lower()
             src, trg, score = line.split('\t')
             word_pairs[-1].append((src, trg))
+            # shape like [(src, trg), (src, trg), ... ]
             golds[-1].append(float(score))
+            # shape like [score, score, score ...]
 
     # Build vocabularies
     src_vocab = {pair[0] for pairs in word_pairs for pair in pairs}
@@ -95,24 +97,32 @@ def main():
                     system.append(args.backoff)
                     gold.append(gold_score)
         name = os.path.splitext(os.path.basename(args.input[i]))[0]
+        #os.path.splitext : split the path name path into a pair (root, ext)
+        #for example : 'en-de.txt' --> 'en-de', '.txt'
+        #os.path.basename : return the base name of path name path
+        #for example : './data/en-de.txt' --> 'en-de.txt'
         coverage = len(system) / (len(system) + oov)
         pearson = scipy.stats.pearsonr(gold, system)[0]
+        # Calculate a Pearson correlation coefficient and the p-value for testing non-correlation.
         spearman = scipy.stats.spearmanr(gold, system)[0]
+        # Calculate a Spearman rank-order correlation coefficient and the p-value to test for non-correlation.
         results.append((name, coverage, pearson, spearman))
         print('Coverage:{0:7.2%}  Pearson:{1:7.2%}  Spearman:{2:7.2%} | {3}'.format(coverage, pearson, spearman, name))
 
     # Compute and print total (averaged) results
+    # if there're multi-input testfile
     if len(results) > 1:
         print('-'*80)
         if args.sim is not None:
             sim = list(zip(*[res for res in results if res[0] in args.sim]))
             print('Coverage:{0:7.2%}  Pearson:{1:7.2%}  Spearman:{2:7.2%} | sim.'.format(np.mean(sim[1]), np.mean(sim[2]), np.mean(sim[3])))
-        if args.rel is not None:
+        if args.rel is not None:i
             rel = list(zip(*[res for res in results if res[0] in args.rel]))
             print('Coverage:{0:7.2%}  Pearson:{1:7.2%}  Spearman:{2:7.2%} | rel.'.format(np.mean(rel[1]), np.mean(rel[2]), np.mean(rel[3])))
         if args.all is not None:
             results = [res for res in results if res[0] in args.all]
         results = list(zip(*results))
+        # zip(*result) : unzip
         print('Coverage:{0:7.2%}  Pearson:{1:7.2%}  Spearman:{2:7.2%} | all'.format(np.mean(results[1]), np.mean(results[2]), np.mean(results[3])))
 
 
