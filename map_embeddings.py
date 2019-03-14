@@ -69,7 +69,7 @@ def main():
     parser.add_argument('--cuda', action='store_true', help='use cuda (requires cupy)')
     # action - The basic type of action to be taken when this argument is encountered at the command line.
     # store_ture - store true value
-    parser.add_argument('--batch_size', default=10000, type=int, help='batch size (defaults to 10000); does not affect results, larger is usually faster but uses more memory')
+    parser.add_argument('--batch_size', default=1000, type=int, help='batch size (defaults to 10000); does not affect results, larger is usually faster but uses more memory')
     parser.add_argument('--seed', type=int, default=0, help='the random seed (defaults to 0)')
 
     recommended_group = parser.add_argument_group('recommended settings', 'Recommended settings for different scenarios')
@@ -98,6 +98,7 @@ def main():
 
     mapping_group = parser.add_argument_group('advanced mapping arguments', 'Advanced embedding mapping arguments')
     mapping_group.add_argument('--normalize', choices=['unit', 'center', 'unitdim', 'centeremb', 'none'], nargs='*', default=[], help='the normalization actions to perform in order')
+    # no normalization in default
     mapping_group.add_argument('--whiten', action='store_true', help='whiten the embeddings')
     mapping_group.add_argument('--src_reweight', type=float, default=0, nargs='?', const=1, help='re-weight the source language embeddings')
     mapping_group.add_argument('--trg_reweight', type=float, default=0, nargs='?', const=1, help='re-weight the target language embeddings')
@@ -169,6 +170,7 @@ def main():
         z = xp.asarray(z)
     else:
         xp = np
+    # fix random seed
     xp.random.seed(args.seed)
 
     # Build word to index map
@@ -182,6 +184,7 @@ def main():
     # Build the seed dictionary
     src_indices = []
     trg_indices = []
+    dict_size = 5000
     if args.init_unsupervised:
         sim_size = min(x.shape[0], z.shape[0]) if args.unsupervised_vocab <= 0 else min(x.shape[0], z.shape[0], args.unsupervised_vocab)
         u, s, vt = xp.linalg.svd(x[:sim_size], full_matrices=False)
@@ -232,7 +235,8 @@ def main():
                 trg_indices.append(trg_ind)
             except KeyError:
                 print('WARNING: OOV dictionary entry ({0} - {1})'.format(src, trg), file=sys.stderr)
-
+            if len(src_indices) == dict_size:
+                break
     # Read validation dictionary
     if args.validation is not None:
         f = open(args.validation, encoding=args.encoding, errors='surrogateescape')
@@ -258,6 +262,7 @@ def main():
     # Allocate memory
     xw = xp.empty_like(x)
     zw = xp.empty_like(z)
+    # choose to cut-off or not
     src_size = x.shape[0] if args.vocabulary_cutoff <= 0 else min(x.shape[0], args.vocabulary_cutoff)
     trg_size = z.shape[0] if args.vocabulary_cutoff <= 0 else min(z.shape[0], args.vocabulary_cutoff)
     simfwd = xp.empty((args.batch_size, trg_size), dtype=dtype)
