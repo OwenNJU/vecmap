@@ -184,7 +184,7 @@ def main():
     # Build the seed dictionary
     src_indices = []
     trg_indices = []
-    dict_size = 5000
+    dict_size = 25
     if args.init_unsupervised:
         sim_size = min(x.shape[0], z.shape[0]) if args.unsupervised_vocab <= 0 else min(x.shape[0], z.shape[0], args.unsupervised_vocab)
         u, s, vt = xp.linalg.svd(x[:sim_size], full_matrices=False)
@@ -213,6 +213,9 @@ def main():
         del xsim, zsim, sim
     elif args.init_numerals:
         numeral_regex = re.compile('^[0-9]+$')
+        # ^ match from start of words $ match to end of words
+        # consider numbers from 0 to 9
+        # http://www.runoob.com/python/python-reg-expressions.html
         src_numerals = {word for word in src_words if numeral_regex.match(word) is not None}
         trg_numerals = {word for word in trg_words if numeral_regex.match(word) is not None}
         numerals = src_numerals.intersection(trg_numerals)
@@ -289,6 +292,7 @@ def main():
     while True:
 
         # Increase the keep probability if we have not improve in args.stochastic_interval iterations
+        # for init-numeral : if objective doesn's increase after 1 iteration, then stop it directly
         if it - last_improvement > args.stochastic_interval:
             if keep_prob >= 1.0:
                 end = True
