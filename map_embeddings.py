@@ -184,7 +184,7 @@ def main():
     # Build the seed dictionary
     src_indices = []
     trg_indices = []
-    dict_size = 25
+    dict_size = 5000
     if args.init_unsupervised:
         sim_size = min(x.shape[0], z.shape[0]) if args.unsupervised_vocab <= 0 else min(x.shape[0], z.shape[0], args.unsupervised_vocab)
         u, s, vt = xp.linalg.svd(x[:sim_size], full_matrices=False)
