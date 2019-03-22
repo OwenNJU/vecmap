@@ -22,6 +22,10 @@ import numpy as np
 import re
 import sys
 import time
+#tensorboard part
+import os
+import tensorflow as tf
+from tensorflow.contrib.tensorboard.plugins import projector
 
 
 def dropout(m, p):
@@ -71,6 +75,7 @@ def main():
     # store_ture - store true value
     parser.add_argument('--batch_size', default=1000, type=int, help='batch size (defaults to 10000); does not affect results, larger is usually faster but uses more memory')
     parser.add_argument('--seed', type=int, default=0, help='the random seed (defaults to 0)')
+    parser.add_argument('--draw', action='store_true', help='use tensorboard to draw')
 
     recommended_group = parser.add_argument_group('recommended settings', 'Recommended settings for different scenarios')
     # add_argument_group() - returns an argument group object which has an add_argument() method just like a regular ArgumentParser.
@@ -177,6 +182,19 @@ def main():
     src_word2ind = {word: i for i, word in enumerate(src_words)}
     trg_word2ind = {word: i for i, word in enumerate(trg_words)}
 
+    # draw distribution of language space
+    if args.draw:
+        LOG_DIR = 'logs'
+        x = tf.Variable(x, name='src_emb')
+        with tf.Session() as sess:
+            saver = tf.train.Saver([x])
+            sess.run(x.initializer())
+            saver.save(sess, os.path.join(LOG_DIR, 'src_emb.ckpt'))
+            config = projector.ProjectorConfig()
+            emb = config.embeddings.add()
+            emb.tensor_name = x.name
+            projector.visualize_embeddings(tf.summary.FileWriter(LOG_DIR), config)
+    
     # STEP 0: Normalization
     embeddings.normalize(x, args.normalize)
     embeddings.normalize(z, args.normalize)
@@ -429,7 +447,7 @@ def main():
 
         t = time.time()
         it += 1
-
+    
     # Write mapped embeddings
     srcfile = open(args.src_output, mode='w', encoding=args.encoding, errors='surrogateescape')
     trgfile = open(args.trg_output, mode='w', encoding=args.encoding, errors='surrogateescape')
