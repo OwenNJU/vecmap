@@ -185,14 +185,14 @@ def main():
     # draw distribution of language space
     if args.draw:
         LOG_DIR = '/logs'
-        x = tf.Variable(x, name='src_emb')
+        x_emb = tf.Variable(x, name='src_emb')
         with tf.Session() as sess:
-            saver = tf.train.Saver([x])
-            sess.run(x.initializer())
+            saver = tf.train.Saver([x_emb])
+            sess.run(x_emb.initializer())
             saver.save(sess, os.path.join(LOG_DIR, 'src_emb.ckpt'))
             config = projector.ProjectorConfig()
             emb = config.embeddings.add()
-            emb.tensor_name = x.name
+            emb.tensor_name = x_emb.name
             projector.visualize_embeddings(tf.summary.FileWriter(LOG_DIR), config)
     
     # STEP 0: Normalization
