@@ -184,7 +184,7 @@ def main():
 
     # draw distribution of language space
     if args.draw:
-        LOG_DIR = 'logs'
+        LOG_DIR = '/logs'
         x = tf.Variable(x, name='src_emb')
         with tf.Session() as sess:
             saver = tf.train.Saver([x])
