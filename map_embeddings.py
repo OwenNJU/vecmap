@@ -22,11 +22,9 @@ import numpy as np
 import re
 import sys
 import time
-#tensorboard part
-import os
-import tensorflow as tf
-from tensorflow.contrib.tensorboard.plugins import projector
-
+import matplotlib.pyplot as plt
+from sklearn.decomposition import PCA
+import seaborn as sns
 
 def dropout(m, p):
     if p <= 0.0:
@@ -181,19 +179,6 @@ def main():
     # Build word to index map
     src_word2ind = {word: i for i, word in enumerate(src_words)}
     trg_word2ind = {word: i for i, word in enumerate(trg_words)}
-
-    # draw distribution of language space
-    if args.draw:
-        LOG_DIR = '/logs'
-        x_emb = tf.Variable(x, name='src_emb')
-        with tf.Session() as sess:
-            saver = tf.train.Saver([x_emb])
-            sess.run(x_emb.initializer())
-            saver.save(sess, os.path.join(LOG_DIR, 'src_emb.ckpt'))
-            config = projector.ProjectorConfig()
-            emb = config.embeddings.add()
-            emb.tensor_name = x_emb.name
-            projector.visualize_embeddings(tf.summary.FileWriter(LOG_DIR), config)
     
     # STEP 0: Normalization
     embeddings.normalize(x, args.normalize)
@@ -447,7 +432,31 @@ def main():
 
         t = time.time()
         it += 1
-    
+
+    # draw distribution of language space
+    if args.draw:
+        PCA_model = PCA(n_components=2)
+        x_PCA = PCA_model.fit_transform(asnumpy(xw))
+        x1 = [feature[0] for feature in x_PCA]
+        y1 = [feature[1] for feature in x_PCA]
+        z_PCA = PCA_model.fit_transform(asnumpy(zw))
+        x2 = [feature[0] for feature in z_PCA]
+        y2 = [feature[1] for feature in z_PCA]
+        '''
+        # draw with plt
+        plt.scatter(x2, y2, s=10, c='r', alpha=0.4)
+        plt.scatter(x1, y1, s=10, c='b', alpha=0.2)
+        plt.savefig('./share_space.png')
+        '''
+        # draw with seaborn
+        plt.figure()
+        sns.jointplot(x1, y1, kind='hex', color='b')
+        plt.savefig('./src_mapped_emb.png')
+        plt.figure()
+        sns.jointplot(x2, y2, kind='hex', color='g')
+        plt.savefig('./trg_mapped_emb.png')
+
+
     # Write mapped embeddings
     srcfile = open(args.src_output, mode='w', encoding=args.encoding, errors='surrogateescape')
     trgfile = open(args.trg_output, mode='w', encoding=args.encoding, errors='surrogateescape')
