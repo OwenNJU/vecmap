@@ -73,7 +73,7 @@ def main():
     # store_ture - store true value
     parser.add_argument('--batch_size', default=1000, type=int, help='batch size (defaults to 10000); does not affect results, larger is usually faster but uses more memory')
     parser.add_argument('--seed', type=int, default=0, help='the random seed (defaults to 0)')
-    parser.add_argument('--draw', action='store_true', help='use tensorboard to draw')
+    parser.add_argument('--draw', action='store_true', help='use seaborn to draw')
 
     recommended_group = parser.add_argument_group('recommended settings', 'Recommended settings for different scenarios')
     # add_argument_group() - returns an argument group object which has an add_argument() method just like a regular ArgumentParser.
